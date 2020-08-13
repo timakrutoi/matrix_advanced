@@ -30,7 +30,7 @@ matrix<T>::matrix(size_t size) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, 0);
+	std::fill_n(data[0], size_x * size_y, 1);
 	for (size_t i = 1; i < size_x; i++) {
 		data[i] = data[0] + i * size_y;
 	}
@@ -74,7 +74,7 @@ void matrix<T>::set(T val) {
 
 template<typename T>
 void matrix<T>::set() {
-	srand(15647);
+	srand(12342);
 	for (size_t i = 0; i < size_x; i++) {
 		for (size_t j = 0; j < size_y; j++) {
 			data[i][j] = T(rand() % 9) + 1;
@@ -192,6 +192,7 @@ matrix<T> matrix<T>::LU() const{
 	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU");
 
 	matrix<T> L(size_x), U(size_x);
+	//size_t c = 0;
 
 	for (size_t i = 0; i < size_x; i++) {
 		U.data[0][i] = data[0][i];
@@ -207,11 +208,13 @@ matrix<T> matrix<T>::LU() const{
 			for (size_t k = 0; k < i; k++) {
 				U.data[i][j] = U.data[i][j] - (L.data[i][k] * U.data[k][j]);
 				L.data[j][i] = L.data[j][i] - (L.data[j][k] * U.data[k][i]);
+				//c++;
 			}
 
 			L.data[j][i] = L.data[j][i] / U.data[i][i];
 		}
 	}
+	//std::cout << c << std::endl;
 
 	return U;
 }
@@ -224,7 +227,7 @@ const T matrix<T>::old_det() const {
 	if (size_x > 2) {
 		for (size_t i = 0; i < size_x; i++) {
 			matrix<T> temp = this->without_row_and_col(0, i);
-			result = result + T(pow(-1, i) * data[0][i] * temp.det());
+			result = result + T(pow(-1, i) * data[0][i] * temp.old_det());
 		}
 		return result;
 	}
@@ -339,7 +342,7 @@ template<typename T>
 matrix<T> matrix<T>::operator*(const matrix& m) const {
 	if (size_y != m.size_x) throw std::logic_error("Invalid operator *");
 
-	//if ((size_x > 64 && size_y > 64)/* && (size_x == size_y)*/) return multi_strassen(*this, m);
+	//if (size_x > 64) return multi_strassen(*this, m, 0);
 
 	matrix<T> temp(size_x, m.size_y);
 
@@ -368,7 +371,7 @@ matrix<T> matrix<T>::operator*(const T& val) const {
 }
 
 template <typename T>
-matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2) {
+matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread) {
 	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
 
 	static size_t size = temp1.size_x;
@@ -387,15 +390,39 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2) {
 
 	temp1.cut(a1, a2, a3, a4);
 	temp2.cut(b1, b2, b3, b4);
-
-	matrix<T> p1 = multi_strassen(a1, b2 - b4);
-	matrix<T> p2 = multi_strassen(a1 + a2, b4);
-	matrix<T> p3 = multi_strassen(a3 + a4, b1);
-	matrix<T> p4 = multi_strassen(a4, b3 - b1);
-	matrix<T> p5 = multi_strassen(a1 + a4, b1 + b4);
-	matrix<T> p6 = multi_strassen(a2 - a4, b3 + b4);
-	matrix<T> p7 = multi_strassen(a1 - a3, b1 + b2);
-
+	matrix<T> p1;
+	matrix<T> p2;
+	matrix<T> p3;
+	matrix<T> p4;
+	matrix<T> p5;
+	matrix<T> p6;
+	matrix<T> p7;
+	if (mlt_thread < _THREAD_NUMBER_) {
+		mlt_thread++;
+		std::future<matrix<T>> f1 = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
+		std::future<matrix<T>> f2 = std::async(&multi_strassen<T>, a1 + a2, b4, mlt_thread);
+		std::future<matrix<T>> f3 = std::async(&multi_strassen<T>, a3 + a4, b1, mlt_thread);
+		std::future<matrix<T>> f4 = std::async(&multi_strassen<T>, a4, b3 - b1, mlt_thread);
+		std::future<matrix<T>> f5 = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
+		std::future<matrix<T>> f6 = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
+		std::future<matrix<T>> f7 = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
+		p1 = f1.get();
+		p2 = f2.get();
+		p3 = f3.get();
+		p4 = f4.get();
+		p5 = f5.get();
+		p6 = f6.get();
+		p7 = f7.get();
+	}
+	else {
+		p1 = multi_strassen(a1, b2 - b4, mlt_thread);
+		p2 = multi_strassen(a1 + a2, b4, mlt_thread);
+		p3 = multi_strassen(a3 + a4, b1, mlt_thread);
+		p4 = multi_strassen(a4, b3 - b1, mlt_thread);
+		p5 = multi_strassen(a1 + a4, b1 + b4, mlt_thread);
+		p6 = multi_strassen(a2 - a4, b3 + b4, mlt_thread);
+		p7 = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
+	}
 	matrix<T> c1 = (p5 + p4) + (p6 - p2);
 	matrix<T> c2 = (p1 + p2);
 	matrix<T> c3 = (p3 + p4);
@@ -426,7 +453,7 @@ std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
 	size_t size = matrix.columns() * matrix.rows();
 	for (size_t i = 0; i < size; i++) {
 		if (i % matrix.rows() == 0 && i > 0) out << "]\n[ ";
-		out << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
+		out << std::setw(3) << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
 	}
 	out << "]" << std::endl;
 	return out;

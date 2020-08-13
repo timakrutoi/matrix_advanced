@@ -1,6 +1,11 @@
 #pragma once
+
+#define _THREAD_NUMBER_ 1 // семь в степени этого числа потоков + 1 основной для мейна
+
 #include <iostream>
+#include <future>
 #include <ctime>
+#include <iomanip>
 
 template<typename T>
 class matrix {
@@ -44,7 +49,7 @@ public:
 	matrix t();
 
 	template <typename T>
-	friend matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2);
+	friend matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread);
 };
 
 #include "matrix.ipp"
