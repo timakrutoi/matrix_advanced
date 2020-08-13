@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <ctime>
 
 template<typename T>
 class matrix {
@@ -18,8 +19,6 @@ public:
 	matrix(size_t size);
 	~matrix();
 
-	int sjn();
-
 	T& set(size_t x, size_t y, T value);
 	void set(T val);
 	void set();
@@ -28,7 +27,10 @@ public:
 	const size_t rows() const;
 	const size_t columns() const;
 	matrix without_row_and_col(size_t row, size_t col) const;
+	matrix LU() const;
+
 	const T det() const;
+	const T old_det() const;
 	const T minor(size_t row, size_t col) const;
 
 	matrix inv();

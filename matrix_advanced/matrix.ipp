@@ -74,9 +74,10 @@ void matrix<T>::set(T val) {
 
 template<typename T>
 void matrix<T>::set() {
+	srand(15647);
 	for (size_t i = 0; i < size_x; i++) {
 		for (size_t j = 0; j < size_y; j++) {
-			data[i][j] = T(rand() % 10);
+			data[i][j] = T(rand() % 9) + 1;
 		}
 	}
 }
@@ -187,7 +188,36 @@ matrix<T> matrix<T>::without_row_and_col(size_t row, size_t col) const {
 }
 
 template<typename T>
-const T matrix<T>::det() const {
+matrix<T> matrix<T>::LU() const{
+	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU");
+
+	matrix<T> L(size_x), U(size_x);
+
+	for (size_t i = 0; i < size_x; i++) {
+		U.data[0][i] = data[0][i];
+		L.data[i][0] = (data[i][0] / data[0][0]);
+	}
+
+	for (size_t i = 1; i < size_x; i++) {
+		for (size_t j = i; j < size_x; j++) {
+
+			U.data[i][j] = data[i][j];
+			L.data[j][i] = data[j][i];
+
+			for (size_t k = 0; k < i; k++) {
+				U.data[i][j] = U.data[i][j] - (L.data[i][k] * U.data[k][j]);
+				L.data[j][i] = L.data[j][i] - (L.data[j][k] * U.data[k][i]);
+			}
+
+			L.data[j][i] = L.data[j][i] / U.data[i][i];
+		}
+	}
+
+	return U;
+}
+
+template<typename T>
+const T matrix<T>::old_det() const {
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
 	T result = 0;
 
@@ -199,6 +229,19 @@ const T matrix<T>::det() const {
 		return result;
 	}
 	else return T(data[0][0] * data[1][1] - data[0][1] * data[1][0]);
+}
+
+template<typename T>
+const T matrix<T>::det() const {
+	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
+	matrix<T> temp(*this); temp = temp.LU();
+	T det = T(1);
+
+	for (size_t i = 0; i < size_x; i++) {
+		det = det * temp.data[i][i];
+	}
+
+	return det;
 }
 
 template<typename T>
