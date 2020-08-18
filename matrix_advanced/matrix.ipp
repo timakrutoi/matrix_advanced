@@ -18,7 +18,7 @@ inline matrix<T>::matrix(size_t row, size_t column) {
 }
 
 template <typename T>
-matrix<T>::matrix(size_t size) {
+matrix<T>::matrix(size_t size, char c) {
 	size_x = size; size_y = size;
 	data = new T * [size_x];
 
@@ -30,9 +30,11 @@ matrix<T>::matrix(size_t size) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, 1);
+	std::fill_n(data[0], size_x * size_y, 0);
+	if (c == 'e') data[0][0] = 1;
 	for (size_t i = 1; i < size_x; i++) {
 		data[i] = data[0] + i * size_y;
+		data[i][i] = data[0][0];
 	}
 }
 
@@ -256,20 +258,48 @@ const T matrix<T>::minor(size_t row, size_t col) const {
 
 template<typename T>
 matrix<T> matrix<T>::inv() {
-	T determinant = this->det();
-	if (determinant == 0) throw std::logic_error("Invalid inverse matrix, if det = 0, inverse matrix dont exist");
+	if (size_x != size_y) throw std::logic_error("Invalid matrix size in inverse matrix");
 
-	matrix<T> result(size_y, size_x), temp(*this);
-	temp = temp.t();
+	matrix<T> E(size_x, 'e'); //E.set_E();
+	matrix<T> copy(*this);
 
-	for (size_t i = 0; i < size_y; i++) {
-		for (size_t j = 0; j < size_x; j++) {
-			result.data[i][j] = T(pow(-1, i + j) * temp.minor(i, j));
+	for (size_t k = 0; k < size_x; k++) {
+		if (copy.data[k][k] == 0) {
+			size_t i = 0;
+
+			for (i; i < size_x || copy.data[i][k] != 0; i++);
+
+			for (size_t j = 0; j < size_x; j++) {
+				T tmp = copy.data[k][j];
+				copy.data[k][j] = copy.data[i][j];
+				copy.data[i][j] = tmp;
+				tmp = E.data[k][j];
+				E.data[k][j] = E.data[i][j];
+				E.data[i][j] = tmp;
+			}
+		}
+
+		if (copy.data[k][k] != 1) {
+			T coe = (T) 1 / copy.data[k][k];
+
+			for (size_t i = 0; i < size_x; i++) {
+				copy.data[k][i] = copy.data[k][i] * coe;
+				E.data[k][i] = E.data[k][i] * coe;
+			}
+		}
+
+		for (size_t i = 0; i < size_x; i++) {
+			if (i == k) continue;
+			double coe = copy.data[i][k];
+
+			for (size_t j = 0; j < size_x; j++) {
+				copy.data[i][j] = copy.data[i][j] - (coe * copy.data[k][j]);
+				E.data[i][j] = E.data[i][j] - (coe * E.data[k][j]);
+			}
 		}
 	}
-	result = result * (1 / determinant);
 
-	return result;
+	return E;
 }
 
 template<typename T>
@@ -454,11 +484,16 @@ template<typename T>
 std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
 	out << "[ ";
 	size_t size = matrix.columns() * matrix.rows();
+	//std::cout.precision(_OUTPUT_PRECISION_);
+
 	for (size_t i = 0; i < size; i++) {
+		size_t n = 0;
 		if (i % matrix.rows() == 0 && i > 0) out << "]\n[ ";
-		out << std::setw(3) << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
+		if (!(matrix.get(i / matrix.columns(), i % matrix.columns()) < 0) && n <= 4) { out << " "; n++; }
+		out << std::setw(_OUTPUT_PRECISION_ + 4 - n) << std::setprecision(_OUTPUT_PRECISION_) << std::left << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
 	}
 	out << "]" << std::endl;
+
 	return out;
 }
 

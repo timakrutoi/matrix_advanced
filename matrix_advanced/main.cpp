@@ -2,8 +2,8 @@
 
 int main() {
 	try {
-		matrix<double> m_1(5), m_2; m_1.set();
-		std::cout << m_1;
+		matrix<double> m_1(10), m_2; m_1.set();
+		std::cout << m_1 << std::endl;
 		m_2 = m_1.inv();
 		std::cout << m_2;
 		//unsigned int start = clock();
