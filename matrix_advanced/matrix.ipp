@@ -390,6 +390,7 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 
 	temp1.cut(a1, a2, a3, a4);
 	temp2.cut(b1, b2, b3, b4);
+
 	matrix<T> p1;
 	matrix<T> p2;
 	matrix<T> p3;
@@ -397,6 +398,7 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 	matrix<T> p5;
 	matrix<T> p6;
 	matrix<T> p7;
+
 	if (mlt_thread < _THREAD_NUMBER_) {
 		mlt_thread++;
 		std::future<matrix<T>> f1 = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
@@ -423,6 +425,7 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 		p6 = multi_strassen(a2 - a4, b3 + b4, mlt_thread);
 		p7 = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
 	}
+
 	matrix<T> c1 = (p5 + p4) + (p6 - p2);
 	matrix<T> c2 = (p1 + p2);
 	matrix<T> c3 = (p3 + p4);

@@ -2,8 +2,10 @@
 
 int main() {
 	try {
-		matrix<double> m_1(4); m_1.set();
+		matrix<double> m_1(5), m_2; m_1.set();
 		std::cout << m_1;
+		m_2 = m_1.inv();
+		std::cout << m_2;
 		//unsigned int start = clock();
 
 		//matrix<double> m = multi_strassen(m_1, m_1, 0);
