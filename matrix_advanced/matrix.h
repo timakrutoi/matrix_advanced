@@ -1,7 +1,6 @@
 #pragma once
 
-#define _THREAD_NUMBER_ 1 // семь в степени этого числа потоков + 1 основной для мейна
-#define _OUTPUT_PRECISION_ 0 // количетво знаков после запятой в операторе вывода
+#define _OUTPUT_PRECISION_ 5 // количетво знаков после запятой в операторе вывода
 
 #include <iostream>
 #include <future>
@@ -21,6 +20,7 @@ private:
 public:
 	matrix() { size_x = 0; size_y = 0; data = nullptr; };
 	matrix(const matrix& m);
+	matrix(matrix&& m) noexcept;
 	matrix(size_t row, size_t column);
 	matrix(size_t size, char c = '0');
 	~matrix();
@@ -44,6 +44,7 @@ public:
 	matrix operator+(const matrix& m) const;
 	matrix operator-(const matrix& m) const;
 	matrix& operator=(const matrix& m);
+	matrix& operator=(matrix&& m) noexcept;
 	matrix operator*(const matrix& m) const;
 	matrix operator*(const T& val) const;
 	bool operator==(const matrix& m) const;

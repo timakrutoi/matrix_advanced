@@ -60,6 +60,14 @@ matrix<T>::matrix(const matrix& m) {
 }
 
 template<typename T>
+matrix<T>::matrix(matrix&& m) noexcept {
+	size_x = m.size_x; m.size_x = 0;
+	size_y = m.size_y; m.size_y = 0;
+	data = m.data;
+	m.data = nullptr;
+}
+
+template<typename T>
 T& matrix<T>::set(size_t row, size_t column, T value) {
 	if (row >= size_x || column >= size_y) throw std::out_of_range("Invalid args( set )");
 
@@ -123,6 +131,12 @@ const matrix<T> matrix<T>::add_zero() const {
 
 template <typename T>
 void matrix<T>::cut(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
+	std::cout << m1.size_x << std::endl;
+	std::cout << m2.size_x << std::endl;
+	std::cout << m3.size_x << std::endl;
+	std::cout << m4.size_x << std::endl;
+	std::cout << size_x << std::endl;
+	std::cout << "===================" << std::endl;
 	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
 		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
 		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
@@ -331,6 +345,19 @@ matrix<T> matrix<T>::operator-(const matrix& m) const {
 }
 
 template<typename T>
+matrix<T>& matrix<T>::operator=(matrix&& m) noexcept {
+	if (this == &m) return *this;
+	delete[] data;
+
+	size_x = m.size_x; m.size_x = 0;
+	size_y = m.size_y; m.size_y = 0;
+	data = m.data;
+	m.data = nullptr;
+
+	return *this;
+}
+
+template<typename T>
 matrix<T>& matrix<T>::operator=(const matrix& m) {
 	if (this == &m) return *this;
 	delete[] data;
@@ -372,7 +399,7 @@ template<typename T>
 matrix<T> matrix<T>::operator*(const matrix& m) const {
 	if (size_y != m.size_x) throw std::logic_error("Invalid operator *");
 
-	//if (size_x > 64) return multi_strassen(*this, m, 0);
+	if (size_x >= 64) return multi_strassen(*this, m, 1);
 
 	matrix<T> temp(size_x, m.size_y);
 
@@ -429,8 +456,8 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 	matrix<T> p6;
 	matrix<T> p7;
 
-	if (mlt_thread < _THREAD_NUMBER_) {
-		mlt_thread++;
+	if (mlt_thread > 0) {
+		mlt_thread--;
 		std::future<matrix<T>> f1 = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
 		std::future<matrix<T>> f2 = std::async(&multi_strassen<T>, a1 + a2, b4, mlt_thread);
 		std::future<matrix<T>> f3 = std::async(&multi_strassen<T>, a3 + a4, b1, mlt_thread);
