@@ -173,7 +173,7 @@ void matrix<T>::link(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4)
 	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
 		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
 		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
-		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in cut");
+		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in link");
 
 	size_t temp_x = size_x / 2, temp_y = size_y / 2;
 
