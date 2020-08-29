@@ -1,11 +1,14 @@
 #pragma once
 
 #define _OUTPUT_PRECISION_ 5 // количетво знаков после запятой в операторе вывода
+#define _THREADS_NUM_ 0
 
 #include <iostream>
 #include <future>
 #include <ctime>
 #include <iomanip>
+
+using namespace std;
 
 template<typename T>
 class matrix {

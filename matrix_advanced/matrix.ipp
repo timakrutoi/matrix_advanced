@@ -131,12 +131,13 @@ const matrix<T> matrix<T>::add_zero() const {
 
 template <typename T>
 void matrix<T>::cut(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
-	std::cout << m1.size_x << std::endl;
-	std::cout << m2.size_x << std::endl;
-	std::cout << m3.size_x << std::endl;
-	std::cout << m4.size_x << std::endl;
-	std::cout << size_x << std::endl;
-	std::cout << "===================" << std::endl;
+	//std::cout << m1.size_x << std::endl;
+	//std::cout << m2.size_x << std::endl;
+	//std::cout << m3.size_x << std::endl;
+	//std::cout << m4.size_x << std::endl;
+	//std::cout << size_x << std::endl;
+	//std::cout << "===================" << std::endl;
+
 	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
 		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
 		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
@@ -399,7 +400,7 @@ template<typename T>
 matrix<T> matrix<T>::operator*(const matrix& m) const {
 	if (size_y != m.size_x) throw std::logic_error("Invalid operator *");
 
-	if (size_x >= 64) return multi_strassen(*this, m, 1);
+	//if (size_x >= 64) return multi_strassen(*this, m, _THREADS_NUM_);
 
 	matrix<T> temp(size_x, m.size_y);
 
@@ -465,6 +466,15 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 		std::future<matrix<T>> f5 = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
 		std::future<matrix<T>> f6 = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
 		std::future<matrix<T>> f7 = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
+		
+		f1.wait();
+		f2.wait();
+		f3.wait();
+		f4.wait();
+		f5.wait();
+		f6.wait();
+		f7.wait();
+
 		p1 = f1.get();
 		p2 = f2.get();
 		p3 = f3.get();
