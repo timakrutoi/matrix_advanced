@@ -1,14 +1,17 @@
 #pragma once
 
 #define _OUTPUT_PRECISION_ 5 // количетво знаков после запятой в операторе вывода
+#define _OUTPUT_NUMBERSPACE_SIZE_ 4 // минимальный размер поля для вывода одного числа в операторе вывода
 #define _THREADS_NUM_ 0
 
 #include <iostream>
 #include <future>
 #include <ctime>
+#include <thread>
 #include <iomanip>
+#include <mutex>
 
-using namespace std;
+std::mutex mtx;
 
 template<typename T>
 class matrix {
@@ -35,6 +38,8 @@ public:
 
 	const size_t rows() const;
 	const size_t columns() const;
+	const void resize(size_t x, size_t y);
+	const void resize(size_t x);
 	matrix without_row_and_col(size_t row, size_t col) const;
 	matrix LU() const;
 
@@ -54,7 +59,7 @@ public:
 	matrix t();
 
 	template <typename T>
-	friend matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread);
+	friend void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result, int mlt_thread);
 };
 
 #include "matrix.ipp"

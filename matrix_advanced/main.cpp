@@ -1,14 +1,19 @@
+#define xz 1024
+
 #include "matrix.h"
 
 int main() {
 	try {
-		matrix<double> m_1(256), m_2; m_1.set();
+		matrix<double> m_1(xz), m_2(xz); m_1.set(1);
 		int start = clock();
-		//std::cout << m_1 << std::endl;
-		//m_2 = m_1.inv();
-		//m_1 = m_1 * m_1;
-		m_1 = multi_strassen(m_1, m_1, 1);
-		//std::cout << m_2;
+
+		multi_strassen(m_1, m_1, m_2, 0);
+		
+		std::cout << clock() - start << std::endl;
+
+		start = clock();
+		
+		m_1 = m_1 * m_1;
 
 		std::cout << clock() - start;
 	}

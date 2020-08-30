@@ -109,6 +109,34 @@ const size_t matrix<T>::columns() const {
 	return size_y;
 }
 
+template<typename T>
+const void matrix<T>::resize(size_t x, size_t y) {
+	matrix<T> temp(x, y);
+
+	for (size_t i = 0; i < size_x; i++) {
+		for (size_t j = 0; j < size_y; j++) {
+			if (i < x && j < y) temp.data[i][j] = data[i][j];
+		}
+	}
+
+	*this = temp;
+	//return temp;
+}
+
+template<typename T>
+const void matrix<T>::resize(size_t x) {
+	matrix<T> temp(x);
+
+	for (size_t i = 0; i < size_x; i++) {
+		for (size_t j = 0; j < size_x; j++) {
+			if (i < x && j < x) temp.data[i][j] = data[i][j];
+		}
+	}
+
+	*this = temp;
+	//return temp;
+}
+
 template <typename T>
 const matrix<T> matrix<T>::add_zero() const {
 	if (!size_x || !size_y) throw std::logic_error("Invalid size in add_zero");
@@ -131,17 +159,10 @@ const matrix<T> matrix<T>::add_zero() const {
 
 template <typename T>
 void matrix<T>::cut(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
-	//std::cout << m1.size_x << std::endl;
-	//std::cout << m2.size_x << std::endl;
-	//std::cout << m3.size_x << std::endl;
-	//std::cout << m4.size_x << std::endl;
-	//std::cout << size_x << std::endl;
-	//std::cout << "===================" << std::endl;
-
-	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
-		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
-		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
-		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in cut");
+	if (m1.size_x != (size_x / 2) || m1.size_y != (size_y / 2) ||
+		m2.size_x != (size_x / 2) || m2.size_y != (size_y / 2) ||
+		m3.size_x != (size_x / 2) || m3.size_y != (size_y / 2) ||
+		m4.size_x != (size_x / 2) || m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in cut");
 
 	size_t temp_x = size_x / 2, temp_y = size_y / 2;
 
@@ -173,7 +194,7 @@ void matrix<T>::link(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4)
 	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
 		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
 		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
-		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in cut");
+		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in link");
 
 	size_t temp_x = size_x / 2, temp_y = size_y / 2;
 
@@ -429,79 +450,69 @@ matrix<T> matrix<T>::operator*(const T& val) const {
 }
 
 template <typename T>
-matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread) {
-	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
+void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result, int mlt_thread) {
+	//mtx.lock(); // блокировка от других потоков
 
+	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
+	size_t out_size = m1.size_x;
 	static size_t size = temp1.size_x;
 
 	if (size < 64) {
-		return m1 * m2;
+		result = m1 * m2;
+		return ;
 	}
-
-	matrix<T> out(size);
+	
 	size >>= 1;
 
-	matrix<T> a1(size); matrix<T> a2(size);
-	matrix<T> a3(size); matrix<T> a4(size);
-	matrix<T> b1(size); matrix<T> b2(size);
-	matrix<T> b3(size); matrix<T> b4(size);
-
+	matrix<T> a1(size), a2(size), a3(size), a4(size);
+	matrix<T> b1(size), b2(size), b3(size), b4(size);
+	
 	temp1.cut(a1, a2, a3, a4);
 	temp2.cut(b1, b2, b3, b4);
 
-	matrix<T> p1;
-	matrix<T> p2;
-	matrix<T> p3;
-	matrix<T> p4;
-	matrix<T> p5;
-	matrix<T> p6;
-	matrix<T> p7;
+	matrix<T> p1, p2, p3, p4, p5, p6, p7;
 
 	if (mlt_thread > 0) {
 		mlt_thread--;
-		std::future<matrix<T>> f1 = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
-		std::future<matrix<T>> f2 = std::async(&multi_strassen<T>, a1 + a2, b4, mlt_thread);
-		std::future<matrix<T>> f3 = std::async(&multi_strassen<T>, a3 + a4, b1, mlt_thread);
-		std::future<matrix<T>> f4 = std::async(&multi_strassen<T>, a4, b3 - b1, mlt_thread);
-		std::future<matrix<T>> f5 = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
-		std::future<matrix<T>> f6 = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
-		std::future<matrix<T>> f7 = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
 		
-		f1.wait();
-		f2.wait();
-		f3.wait();
-		f4.wait();
-		f5.wait();
-		f6.wait();
-		f7.wait();
+		std::thread t1(&multi_strassen<T>, a1, b2 - b4, p1, mlt_thread);
+		std::thread t2(&multi_strassen<T>, a1 + a2, b4, p2, mlt_thread);
+		std::thread t3(&multi_strassen<T>, a3 + a4, b1, p3, mlt_thread);
+		std::thread t4(&multi_strassen<T>, a4, b3 - b1, p4, mlt_thread);
+		std::thread t5(&multi_strassen<T>, a1 + a4, b1 + b4, p5, mlt_thread);
+		std::thread t6(&multi_strassen<T>, a2 - a4, b3 + b4, p6, mlt_thread);
+		std::thread t7(&multi_strassen<T>, a1 - a3, b1 + b2, p7, mlt_thread);
 
-		p1 = f1.get();
-		p2 = f2.get();
-		p3 = f3.get();
-		p4 = f4.get();
-		p5 = f5.get();
-		p6 = f6.get();
-		p7 = f7.get();
+		t1.join();
+		t2.join();
+		t3.join();
+		t4.join();
+		t5.join();
+		t6.join();
+		t7.join();
+
 	}
 	else {
-		p1 = multi_strassen(a1, b2 - b4, mlt_thread);
-		p2 = multi_strassen(a1 + a2, b4, mlt_thread);
-		p3 = multi_strassen(a3 + a4, b1, mlt_thread);
-		p4 = multi_strassen(a4, b3 - b1, mlt_thread);
-		p5 = multi_strassen(a1 + a4, b1 + b4, mlt_thread);
-		p6 = multi_strassen(a2 - a4, b3 + b4, mlt_thread);
-		p7 = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
+		multi_strassen(a1, b2 - b4, p1, mlt_thread);
+		multi_strassen(a1 + a2, b4, p2, mlt_thread);
+		multi_strassen(a3 + a4, b1, p3, mlt_thread);
+		multi_strassen(a4, b3 - b1, p4, mlt_thread);
+		multi_strassen(a1 + a4, b1 + b4, p5, mlt_thread);
+		multi_strassen(a2 - a4, b3 + b4, p6, mlt_thread);
+		multi_strassen(a1 - a3, b1 + b2, p7, mlt_thread);
 	}
 
 	matrix<T> c1 = (p5 + p4) + (p6 - p2);
 	matrix<T> c2 = (p1 + p2);
 	matrix<T> c3 = (p3 + p4);
 	matrix<T> c4 = (p1 - p3) + (p5 - p7);
+	
+	result.resize(out_size);
+	result.link(c1, c2, c3, c4);	
+	result = result.cut(m1.size_x);
 
-	out.link(c1, c2, c3, c4);
-	out = out.cut(m1.size_x);
-
-	return out;
+	//mtx.unlock(); // разблокировка
+	//return out;
 }
 
 template <typename T>
@@ -527,7 +538,7 @@ std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
 		size_t n = 0;
 		if (i % matrix.rows() == 0 && i > 0) out << "]\n[ ";
 		if (!(matrix.get(i / matrix.columns(), i % matrix.columns()) < 0) && n <= 4) { out << " "; n++; }
-		out << std::setw(_OUTPUT_PRECISION_ + 4 - n) << std::setprecision(_OUTPUT_PRECISION_) << std::left << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
+		out << std::setw(_OUTPUT_PRECISION_ + _OUTPUT_NUMBERSPACE_SIZE_ - n) << std::setprecision(_OUTPUT_PRECISION_) << std::left << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
 	}
 	out << "]" << std::endl;
 
