@@ -475,21 +475,29 @@ void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result,
 	if (mlt_thread > 0) {
 		mlt_thread--;
 		
-		std::thread t1(&multi_strassen<T>, a1, b2 - b4, p1, mlt_thread);
-		std::thread t2(&multi_strassen<T>, a1 + a2, b4, p2, mlt_thread);
-		std::thread t3(&multi_strassen<T>, a3 + a4, b1, p3, mlt_thread);
-		std::thread t4(&multi_strassen<T>, a4, b3 - b1, p4, mlt_thread);
-		std::thread t5(&multi_strassen<T>, a1 + a4, b1 + b4, p5, mlt_thread);
-		std::thread t6(&multi_strassen<T>, a2 - a4, b3 + b4, p6, mlt_thread);
-		std::thread t7(&multi_strassen<T>, a1 - a3, b1 + b2, p7, mlt_thread);
+		std::thread f1(&multi_strassen<T>, a1, b2 - b4, p1, mlt_thread);
+		std::thread f2(&multi_strassen<T>, a1 + a2, b4, p2, mlt_thread);
+		std::thread f3(&multi_strassen<T>, a3 + a4, b1, p3, mlt_thread);
+		std::thread f4(&multi_strassen<T>, a4, b3 - b1, p4, mlt_thread);
+		std::thread f5(&multi_strassen<T>, a1 + a4, b1 + b4, p5, mlt_thread);
+		std::thread f6(&multi_strassen<T>, a2 - a4, b3 + b4, p6, mlt_thread);
+		std::thread f7(&multi_strassen<T>, a1 - a3, b1 + b2, p7, mlt_thread);
 
-		t1.join();
-		t2.join();
-		t3.join();
-		t4.join();
-		t5.join();
-		t6.join();
-		t7.join();
+		//std::thread f1{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f2{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f3{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f4{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f5{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f6{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		//std::thread f7{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+
+		f1.join();
+		f2.join();
+		f3.join();
+		f4.join();
+		f5.join();
+		f6.join();
+		f7.join();
 
 	}
 	else {
