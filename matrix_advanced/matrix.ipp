@@ -432,7 +432,7 @@ template <typename T>
 matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread) {
 	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
 
-	static size_t size = temp1.size_x;
+	size_t size = temp1.size_x;
 
 	if (size < 64) {
 		return m1 * m2;
