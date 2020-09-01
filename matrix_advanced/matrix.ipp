@@ -31,10 +31,16 @@ matrix<T>::matrix(size_t size, char c) {
 	}
 
 	std::fill_n(data[0], size_x * size_y, 0);
-	if (c == 'e') data[0][0] = 1;
-	for (size_t i = 1; i < size_x; i++) {
-		data[i] = data[0] + i * size_y;
-		data[i][i] = data[0][0];
+	if (c == 'e') {
+		for (size_t i = 0; i < size_x; i++) {
+			data[i] = data[0] + i * size_y;
+			data[i][i] = 1;
+		}
+	}
+	else {
+		for (size_t i = 1; i < size_x; i++) {
+			data[i] = data[0] + i * size_y;
+		}
 	}
 }
 
@@ -191,10 +197,10 @@ matrix<T> matrix<T>::cut(size_t size) {
 
 template <typename T>
 void matrix<T>::link(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
-	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
-		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
-		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
-		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in link");
+	if (m1.size_x != (size_x / 2) || m1.size_y != (size_y / 2) ||
+		m2.size_x != (size_x / 2) || m2.size_y != (size_y / 2) ||
+		m3.size_x != (size_x / 2) || m3.size_y != (size_y / 2) ||
+		m4.size_x != (size_x / 2) || m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in link");
 
 	size_t temp_x = size_x / 2, temp_y = size_y / 2;
 
@@ -450,16 +456,15 @@ matrix<T> matrix<T>::operator*(const T& val) const {
 }
 
 template <typename T>
-void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result, int mlt_thread) {
+matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread) {
 	//mtx.lock(); // блокировка от других потоков
 
 	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
-	size_t out_size = m1.size_x;
-	static size_t size = temp1.size_x;
+	//size_t out_size = m1.size_x;
+	size_t size = temp1.size_x;
 
 	if (size < 64) {
-		result = m1 * m2;
-		return ;
+		return m1 * m2;
 	}
 	
 	size >>= 1;
@@ -470,44 +475,33 @@ void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result,
 	temp1.cut(a1, a2, a3, a4);
 	temp2.cut(b1, b2, b3, b4);
 
-	matrix<T> p1, p2, p3, p4, p5, p6, p7;
+	matrix<T> p[7];
 
 	if (mlt_thread > 0) {
 		mlt_thread--;
-		
-		std::thread f1(&multi_strassen<T>, a1, b2 - b4, p1, mlt_thread);
-		std::thread f2(&multi_strassen<T>, a1 + a2, b4, p2, mlt_thread);
-		std::thread f3(&multi_strassen<T>, a3 + a4, b1, p3, mlt_thread);
-		std::thread f4(&multi_strassen<T>, a4, b3 - b1, p4, mlt_thread);
-		std::thread f5(&multi_strassen<T>, a1 + a4, b1 + b4, p5, mlt_thread);
-		std::thread f6(&multi_strassen<T>, a2 - a4, b3 + b4, p6, mlt_thread);
-		std::thread f7(&multi_strassen<T>, a1 - a3, b1 + b2, p7, mlt_thread);
+		std::future<matrix<T>> f[7];
 
-		//std::thread f1{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f2{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f3{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f4{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f5{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f6{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
-		//std::thread f7{ [&](const matrix<T>& m1, const matrix<T>& m2, matrix<T>& out, int mlt_thread) { return multi_strassen<T>(p[0], a1, b2 - b4, mlt_thread); } };
+		f[0] = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
+		f[1] = std::async(&multi_strassen<T>, a1 + a2, b4, mlt_thread);
+		f[2] = std::async(&multi_strassen<T>, a3 + a4, b1, mlt_thread);
+		f[3] = std::async(&multi_strassen<T>, a4, b3 - b1, mlt_thread);
+		f[4] = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
+		f[5] = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
+		f[6] = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
 
-		f1.join();
-		f2.join();
-		f3.join();
-		f4.join();
-		f5.join();
-		f6.join();
-		f7.join();
+		for (size_t i = 0; i < 7; i++) {
+			p[i] = f[i].get();
+		}
 
 	}
 	else {
-		multi_strassen(a1, b2 - b4, p1, mlt_thread);
-		multi_strassen(a1 + a2, b4, p2, mlt_thread);
-		multi_strassen(a3 + a4, b1, p3, mlt_thread);
-		multi_strassen(a4, b3 - b1, p4, mlt_thread);
-		multi_strassen(a1 + a4, b1 + b4, p5, mlt_thread);
-		multi_strassen(a2 - a4, b3 + b4, p6, mlt_thread);
-		multi_strassen(a1 - a3, b1 + b2, p7, mlt_thread);
+		p[0] = multi_strassen(a1, b2 - b4, mlt_thread);
+		p[1] = multi_strassen(a1 + a2, b4, mlt_thread);
+		p[2] = multi_strassen(a3 + a4, b1, mlt_thread);
+		p[3] = multi_strassen(a4, b3 - b1, mlt_thread);
+		p[4] = multi_strassen(a1 + a4, b1 + b4, mlt_thread);
+		p[5] = multi_strassen(a2 - a4, b3 + b4, mlt_thread);
+		p[6] = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
 	}
 
 	matrix<T> c1 = (p5 + p4) + (p6 - p2);
@@ -515,7 +509,8 @@ void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result,
 	matrix<T> c3 = (p3 + p4);
 	matrix<T> c4 = (p1 - p3) + (p5 - p7);
 	
-	result.resize(out_size);
+	size <<= 1;
+	matrix<T> result(size);
 	result.link(c1, c2, c3, c4);	
 	result = result.cut(m1.size_x);
 

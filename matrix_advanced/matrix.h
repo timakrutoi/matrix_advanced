@@ -59,7 +59,7 @@ public:
 	matrix t();
 
 	template <typename T>
-	friend void multi_strassen(const matrix<T>& m1, const matrix<T>& m2, matrix<T>& result, int mlt_thread);
+	friend matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread);
 };
 
 #include "matrix.ipp"
