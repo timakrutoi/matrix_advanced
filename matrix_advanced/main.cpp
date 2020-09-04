@@ -7,11 +7,13 @@ int main() {
 		matrix<double> m_1(xz), m_2(xz); m_1.set(1);
 		int start = clock();
 
-		m_2 = multi_strassen(m_1, m_1, 0);
+		//m_2 = m_1.multi(m_1);
+		m_2 = m_1.multi(m_1);
+		//m_2 = multi_strassen(m_1, m_1, 0);
 		
 		std::cout << clock() - start << std::endl;
 
-		//start = clock();		
+		//start = clock();
 		//m_1 = m_1 * m_1;
 		//std::cout << clock() - start;
 	}

@@ -11,8 +11,6 @@
 #include <iomanip>
 #include <mutex>
 
-std::mutex mtx;
-
 template<typename T>
 class matrix {
 private:
@@ -44,7 +42,6 @@ public:
 	matrix LU() const;
 
 	const T det() const;
-	const T old_det() const;
 	const T minor(size_t row, size_t col) const;
 
 	matrix inv();
@@ -55,6 +52,7 @@ public:
 	matrix& operator=(matrix&& m) noexcept;
 	matrix operator*(const matrix& m) const;
 	matrix operator*(const T& val) const;
+	matrix multi(const matrix& m) const;
 	bool operator==(const matrix& m) const;
 	matrix t();
 

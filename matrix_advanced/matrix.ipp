@@ -264,21 +264,6 @@ matrix<T> matrix<T>::LU() const{
 }
 
 template<typename T>
-const T matrix<T>::old_det() const {
-	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
-	T result = 0;
-
-	if (size_x > 2) {
-		for (size_t i = 0; i < size_x; i++) {
-			matrix<T> temp = this->without_row_and_col(0, i);
-			result = result + T(pow(-1, i) * data[0][i] * temp.old_det());
-		}
-		return result;
-	}
-	else return T(data[0][0] * data[1][1] - data[0][1] * data[1][0]);
-}
-
-template<typename T>
 const T matrix<T>::det() const {
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
 	matrix<T> temp(*this); temp = temp.LU();
@@ -443,6 +428,23 @@ matrix<T> matrix<T>::operator*(const matrix& m) const {
 }
 
 template<typename T>
+matrix<T> matrix<T>::multi(const matrix& m) const {
+	matrix<T> out(m.size_x, size_y);
+
+	for (int i = 0; i < size_y; ++i) {
+		T* c = out.data[i];
+		for (int k = 0; k < size_x; ++k) {
+			const T* b = m.data[k];
+			T a = data[i][k];
+			for (int j = 0; j < m.size_x; ++j)
+				c[j] += a * b[j];
+		}
+	}
+
+	return out;
+}
+
+template<typename T>
 matrix<T> matrix<T>::operator*(const T& val) const {
 	matrix<T> temp(*this);
 
@@ -457,10 +459,7 @@ matrix<T> matrix<T>::operator*(const T& val) const {
 
 template <typename T>
 matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_thread) {
-	//mtx.lock(); // блокировка от других потоков
-
 	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
-	//size_t out_size = m1.size_x;
 	size_t size = temp1.size_x;
 
 	if (size < 64) {
@@ -504,18 +503,17 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 		p[6] = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
 	}
 
-	matrix<T> c1 = (p5 + p4) + (p6 - p2);
-	matrix<T> c2 = (p1 + p2);
-	matrix<T> c3 = (p3 + p4);
-	matrix<T> c4 = (p1 - p3) + (p5 - p7);
+	matrix<T> c1 = (p[4] + p[3]) + (p[5] - p[1]);
+	matrix<T> c2 = (p[0] + p[1]);
+	matrix<T> c3 = (p[2] + p[3]);
+	matrix<T> c4 = (p[0] - p[2]) + (p[4] - p[6]);
 	
 	size <<= 1;
 	matrix<T> result(size);
 	result.link(c1, c2, c3, c4);	
 	result = result.cut(m1.size_x);
 
-	//mtx.unlock(); // разблокировка
-	//return out;
+	return result;
 }
 
 template <typename T>
