@@ -1,4 +1,3 @@
-#include "matrix.h"
 template<typename T>
 inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 	size_x = row; size_y = column;
