@@ -205,7 +205,7 @@ matrix<T> matrix<T>::without_row_and_col(size_t row, size_t col) const {
 }
 
 template<typename T>
-matrix<T> matrix<T>::LU() const{
+matrix<T> matrix<T>::LU() const {
 	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU");
 
 	matrix<T> L(size_x), U(size_x);
@@ -295,7 +295,7 @@ matrix<T> matrix<T>::inv() {
 		}
 
 		if (copy.data[k][k] != 1) {
-			T coe = (T) 1 / copy.data[k][k];
+			T coe = (T)1 / copy.data[k][k];
 
 			for (size_t i = 0; i < size_x; i++) {
 				copy.data[k][i] = copy.data[k][i] * coe;
@@ -466,7 +466,7 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, int mlt_threa
 		std::future<matrix<T>> f5 = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
 		std::future<matrix<T>> f6 = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
 		std::future<matrix<T>> f7 = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
-		
+
 		f1.wait();
 		f2.wait();
 		f3.wait();
