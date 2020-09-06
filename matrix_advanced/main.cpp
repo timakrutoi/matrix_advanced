@@ -15,22 +15,16 @@ void int_to_time(int time) {
 
 int main() {
 	try {
-		matrix<double> m_1(5, 5); m_1.set(1);
-		matrix<double> m_2(m_1);
-		matrix<double> m_3;
-		//unsigned int sum = 0;
+		std::cout << "Starting..." << std::endl;
 
-		//m_3 = m_1 * m_2;
-		cout << m_2 << endl;
+		matrix<double> m1(xz * 2); m1.set(1);
+		unsigned int sum = clock();
 
-		//for (int i = 0; i < 1; i++) {
-		//	clock_t beg = clock();
-		//	m_2 = multi_strassen(m_1, m_1, 1);
-		//	clock_t end = clock();
-		//	sum += end - beg;
-		//}
+		m1 = matrix<double>::multi_strassen(m1, m1, 1);
+		//m1 = matrix<double>::eye(4);
+		//cout << m1 << endl;
 
-		//int_to_time(sum / 1);
+		int_to_time(clock() - sum);
 
 	}
 	catch (std::exception& e) {

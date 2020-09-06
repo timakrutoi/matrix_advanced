@@ -11,8 +11,6 @@
 //#include <vector>
 //#include <immintrin.h>
 
-std::mutex mtx;
-
 template<typename T>
 class matrix {
 private:
@@ -32,10 +30,9 @@ public:
 	matrix(uint32_t size);
 	~matrix();
 
-	T& set(uint32_t x, uint32_t y, T value);
+	void set(uint32_t x, uint32_t y, T value);
 	void set(T val);
 	void set();
-	void eye();
 	const T get(uint32_t x, uint32_t y) const;
 
 	const uint32_t rows() const;
@@ -47,7 +44,7 @@ public:
 	const T det() const;
 	const T minor(uint32_t row, uint32_t col) const;
 
-	matrix inv(); // needs to optimization
+	matrix inv(); // needs optimization
 
 	matrix operator+(const matrix& m) const;
 	matrix operator-(const matrix& m) const;
@@ -56,12 +53,14 @@ public:
 	matrix operator*(const matrix& m) const;
 	matrix operator*(const T& val) const;
 	bool operator==(const matrix& m) const;
+	bool operator!=(const matrix& m) const;
 	matrix t();
 
 	matrix multi(const matrix& m) const; // use this only for square matrices
 
-	template <typename T>
-	friend matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256
+	static matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256
+	
+	static matrix<T> eye(uint32_t size);
 };
 
 #include "matrix.ipp"

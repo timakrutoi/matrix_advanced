@@ -1,4 +1,3 @@
-#include "matrix.h"
 template<typename T>
 inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 	size_x = row; size_y = column;
@@ -13,13 +12,13 @@ inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, 0);
+	std::fill_n(data[0], size_x * size_y, T(0));
 	for (uint32_t i = 1; i < size_x; i++) {
 		data[i] = &data[0][i * size_y];
 	}
 }
 
-template <typename T>
+template<typename T>
 matrix<T>::matrix(uint32_t size_) {
 	size_x = size_; size_y = size_;
 	uint32_t size = size_x * size_y;
@@ -33,7 +32,7 @@ matrix<T>::matrix(uint32_t size_) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, 0);
+	std::fill_n(data[0], size_x * size_y, T(0));
 	for (uint32_t i = 1; i < size_x; i++) {
 		data[i] = &data[0][i * size_y];
 	}
@@ -71,26 +70,16 @@ matrix<T>::matrix(matrix&& m) noexcept {
 }
 
 template<typename T>
-T& matrix<T>::set(uint32_t row, uint32_t column, T value) {
-	if (row >= size_x || column >= size_y) throw std::out_of_range("Invalid args( set )");
+void matrix<T>::set(uint32_t row, uint32_t column, T value) {
+	if (row >= size_x || column >= size_y) throw std::out_of_range("Invalid args ( set )");
 
 	data[row][column] = value;
-	return data[row][column];
 }
 
 template<typename T>
 void matrix<T>::set(T val) {
 	for (uint32_t i = 0; i < size_x; i++) {
 		std::fill_n(data[i], size_y, val);
-	}
-}
-
-template<typename T>
-void matrix<T>::eye() {
-	std::fill_n(data[0], size_x * size_y, 0);
-
-	for (uint32_t i = 0; i < size_x; i++) {
-		data[i][i] = 1;
 	}
 }
 
@@ -144,9 +133,10 @@ const void matrix<T>::resize(uint32_t x, uint32_t y) {
 	*this = temp;
 }
 
-template <typename T>
-const matrix<T> matrix<T>::add_zero() const { //similar to resize methods
+template<typename T>
+const matrix<T> matrix<T>::add_zero() const { //similar to resize method
 	if (!size_x || !size_y) throw std::logic_error("Invalid size in add_zero");
+
 	uint32_t size = 1;
 	while (size < size_x) {
 		size <<= 1;
@@ -163,17 +153,19 @@ const matrix<T> matrix<T>::add_zero() const { //similar to resize methods
 	return temp;
 }
 
-template <typename T>
+template<typename T>
 void matrix<T>::cut(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
-	if (m1.size_x != (size_x / 2) || m1.size_y != (size_y / 2) ||
-		m2.size_x != (size_x / 2) || m2.size_y != (size_y / 2) ||
-		m3.size_x != (size_x / 2) || m3.size_y != (size_y / 2) ||
-		m4.size_x != (size_x / 2) || m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in cut");
+	//uint32_t temp_size_x = size_x / 2, temp_size_y = size_y / 2;
+
+	//if (m1.size_x != temp_size_x || m1.size_y != temp_size_y ||
+	//	m2.size_x != temp_size_x || m2.size_y != temp_size_y ||
+	//	m3.size_x != temp_size_x || m3.size_y != temp_size_y ||
+	//	m4.size_x != temp_size_x || m4.size_y != temp_size_y) throw std::logic_error("Invalid sizes in cut");
 
 	uint32_t temp_size = size_x / 2;
 
-	for (int i = 0; i < size_y; i++) {
-		for (int j = 0; j < size_x; j++) {
+	for (uint32_t i = 0; i < size_y; i++) {
+		for (uint32_t j = 0; j < size_x; j++) {
 			if (i < temp_size && j < temp_size) m1.data[i][j] = data[i][j];
 			if (i < temp_size && j >= temp_size) m2.data[i][j - temp_size] = data[i][j];
 			if (i >= temp_size && j < temp_size) m3.data[i - temp_size][j] = data[i][j];
@@ -182,7 +174,7 @@ void matrix<T>::cut(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) 
 	}
 }
 
-template <typename T>
+template<typename T>
 matrix<T> matrix<T>::cut(uint32_t size) {
 	matrix<T> temp(size);
 
@@ -195,17 +187,19 @@ matrix<T> matrix<T>::cut(uint32_t size) {
 	return temp;
 }
 
-template <typename T>
+template<typename T>
 void matrix<T>::link(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4) {
-	if (m1.size_x != (size_x / 2) && m1.size_y != (size_y / 2) &&
-		m2.size_x != (size_x / 2) && m2.size_y != (size_y / 2) &&
-		m3.size_x != (size_x / 2) && m3.size_y != (size_y / 2) &&
-		m4.size_x != (size_x / 2) && m4.size_y != (size_y / 2)) throw std::logic_error("Invalid sizes in link");
+	//uint32_t temp_size_x = size_x / 2, temp_size_y = size_y / 2;
+
+	//if (m1.size_x != temp_size_x || m1.size_y != temp_size_y ||
+	//	m2.size_x != temp_size_x || m2.size_y != temp_size_y ||
+	//	m3.size_x != temp_size_x || m3.size_y != temp_size_y ||
+	//	m4.size_x != temp_size_x || m4.size_y != temp_size_y) throw std::logic_error("Invalid sizes in link");
 
 	uint32_t temp_size = size_x / 2;
 
-	for (int i = 0; i < size_y; i++) {
-		for (int j = 0; j < size_x; j++) {
+	for (uint32_t i = 0; i < size_y; i++) {
+		for (uint32_t j = 0; j < size_x; j++) {
 			if (i < temp_size && j < temp_size) data[i][j] = m1.data[i][j];
 			if (i < temp_size && j >= temp_size) data[i][j] = m2.data[i][j - temp_size];
 			if (i >= temp_size && j < temp_size) data[i][j] = m3.data[i - temp_size][j];
@@ -216,7 +210,7 @@ void matrix<T>::link(matrix<T>& m1, matrix<T>& m2, matrix<T>& m3, matrix<T>& m4)
 
 template<typename T>
 matrix<T> matrix<T>::without_row_and_col(uint32_t row, uint32_t col) const {
-	if (!(row < size_x && col < size_y)) throw std::logic_error("Invalid sizes in without_row_and_col");
+	if (row >= size_x || col >= size_y) throw std::logic_error("Invalid sizes in without_row_and_col");
 	matrix<T> temp(size_x - 1, size_y - 1);
 
 	for (uint32_t i = 0, c = 0; i < temp.size_x; i++, c++) {
@@ -408,14 +402,19 @@ template<typename T>
 bool matrix<T>::operator==(const matrix<T>& m) const {
 	if (size_x != m.size_x || size_y != m.size_y) return false;
 
-	size_t size = size_y * size_x;
+	uint32_t size = size_y * size_x;
 	T* l = data[0]; T* r = m.data[0];
 
-	for (size_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < size; i++) {
 		if (!(l[i] == r[i])) return false;
 	}
 
 	return true;
+}
+
+template<typename T>
+bool matrix<T>::operator!=(const matrix<T>& m) const {
+	return !(*this == m);
 }
 
 template<typename T>
@@ -445,18 +444,18 @@ template<typename T>
 matrix<T> matrix<T>::operator*(const T& val) const {
 	matrix<T> temp(*this);
 
-	size_t size = size_y * size_x;
+	uint32_t size = size_y * size_x;
 	T* l = data[0];
 
-	for (size_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < size; i++) {
 		l[i] = l[i] * val;
 	}
 
 	return temp;
 }
 
-template <typename T>
-matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread) {
+template<typename T>
+matrix<T> matrix<T>::multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread) {
 
 	matrix<T> temp1 = m1.add_zero(), temp2 = m2.add_zero();
 	uint32_t out_size = m1.size_x;
@@ -482,13 +481,13 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thr
 	if (mlt_thread > 0) {
 		mlt_thread--;
 
-		std::future<matrix<T>> f1 = std::async(&multi_strassen<T>, a1, b2 - b4, mlt_thread);
-		std::future<matrix<T>> f2 = std::async(&multi_strassen<T>, a1 + a2, b4, mlt_thread);
-		std::future<matrix<T>> f3 = std::async(&multi_strassen<T>, a3 + a4, b1, mlt_thread);
-		std::future<matrix<T>> f4 = std::async(&multi_strassen<T>, a4, b3 - b1, mlt_thread);
-		std::future<matrix<T>> f5 = std::async(&multi_strassen<T>, a1 + a4, b1 + b4, mlt_thread);
-		std::future<matrix<T>> f6 = std::async(&multi_strassen<T>, a2 - a4, b3 + b4, mlt_thread);
-		std::future<matrix<T>> f7 = std::async(&multi_strassen<T>, a1 - a3, b1 + b2, mlt_thread);
+		std::future<matrix<T>> f1 = std::async(&matrix<T>::multi_strassen, a1, b2 - b4, mlt_thread);
+		std::future<matrix<T>> f2 = std::async(&matrix<T>::multi_strassen, a1 + a2, b4, mlt_thread);
+		std::future<matrix<T>> f3 = std::async(&matrix<T>::multi_strassen, a3 + a4, b1, mlt_thread);
+		std::future<matrix<T>> f4 = std::async(&matrix<T>::multi_strassen, a4, b3 - b1, mlt_thread);
+		std::future<matrix<T>> f5 = std::async(&matrix<T>::multi_strassen, a1 + a4, b1 + b4, mlt_thread);
+		std::future<matrix<T>> f6 = std::async(&matrix<T>::multi_strassen, a2 - a4, b3 + b4, mlt_thread);
+		std::future<matrix<T>> f7 = std::async(&matrix<T>::multi_strassen, a1 - a3, b1 + b2, mlt_thread);
 
 		p1 = f1.get();
 		p2 = f2.get();
@@ -500,13 +499,13 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thr
 
 	}
 	else {
-		p1 = multi_strassen(a1, b2 - b4, mlt_thread);
-		p2 = multi_strassen(a1 + a2, b4, mlt_thread);
-		p3 = multi_strassen(a3 + a4, b1, mlt_thread);
-		p4 = multi_strassen(a4, b3 - b1, mlt_thread);
-		p5 = multi_strassen(a1 + a4, b1 + b4, mlt_thread);
-		p6 = multi_strassen(a2 - a4, b3 + b4, mlt_thread);
-		p7 = multi_strassen(a1 - a3, b1 + b2, mlt_thread);
+		p1 = matrix<T>::multi_strassen(a1, b2 - b4, mlt_thread);
+		p2 = matrix<T>::multi_strassen(a1 + a2, b4, mlt_thread);
+		p3 = matrix<T>::multi_strassen(a3 + a4, b1, mlt_thread);
+		p4 = matrix<T>::multi_strassen(a4, b3 - b1, mlt_thread);
+		p5 = matrix<T>::multi_strassen(a1 + a4, b1 + b4, mlt_thread);
+		p6 = matrix<T>::multi_strassen(a2 - a4, b3 + b4, mlt_thread);
+		p7 = matrix<T>::multi_strassen(a1 - a3, b1 + b2, mlt_thread);
 	}
 
 	a1.~matrix(); a2.~matrix(); a3.~matrix(); a4.~matrix();
@@ -540,7 +539,18 @@ matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thr
 	return out;
 }
 
-template <typename T>
+template<typename T>
+matrix<T> matrix<T>::eye(uint32_t size) {
+	matrix<T> temp(size);
+
+	for (uint32_t i = 0; i < size; i++) {
+		temp.data[i][i] = T(1);
+	}
+
+	return temp;
+}
+
+template<typename T>
 matrix<T> matrix<T>::t() {
 	matrix<T> temp(size_y, size_x);
 
@@ -564,7 +574,7 @@ matrix<T> matrix<T>::multi(const matrix<T>& m) const {
 
 		for (uint32_t j = 0; j < m.size_y; ++j) {
 			const T* b = m.data[j];
-			T* a = data[i][j];
+			T a = data[i][j];
 
 			for (uint32_t k = 0; k < size_y; ++k) {
 				c[j] += a * b[k];
@@ -576,7 +586,7 @@ matrix<T> matrix<T>::multi(const matrix<T>& m) const {
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
+std::ostream& operator<<(std::ostream& out, matrix<T> matrix) {
 	out << "[ ";
 	uint32_t size = matrix.columns() * matrix.rows();
 	//std::cout.precision(_OUTPUT_PRECISION_);
