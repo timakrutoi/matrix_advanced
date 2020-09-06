@@ -278,7 +278,7 @@ template<typename T>
 matrix<T> matrix<T>::inv() {//need to optimization
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in inverse matrix");
 
-	matrix<T> E(size_x, 'e'); //E.set_E();
+	matrix<T> E = matrix<T>::eye(size_x);
 	matrix<T> copy(*this);
 
 	for (uint32_t k = 0; k < size_x; k++) {
