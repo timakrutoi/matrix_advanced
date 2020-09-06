@@ -1,11 +1,11 @@
 template<typename T>
 inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 	size_x = row; size_y = column;
-	uint32_t size = size_x * size_y;
+	uint32_t temp_size = size_x * size_y;
 	data = new T * [size_x];
 
 	try {
-		data[0] = new T[size];
+		data[0] = new T[temp_size];
 	}
 	catch (const std::bad_alloc&) {
 		delete[] data;
@@ -21,11 +21,11 @@ inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 template<typename T>
 matrix<T>::matrix(uint32_t size_) {
 	size_x = size_; size_y = size_;
-	uint32_t size = size_x * size_y;
+	uint32_t temp_size = size_x * size_y;
 	data = new T * [size_x];
 
 	try {
-		data[0] = new T[size];
+		data[0] = new T[temp_size];
 	}
 	catch (const std::bad_alloc&) {
 		delete[] data;
@@ -87,10 +87,10 @@ template<typename T>
 void matrix<T>::set() {
 	srand(12342);
 
-	uint32_t size = size_x * size_y;
+	uint32_t temp_size = size_x * size_y;
 	T* out = data[0];
 
-	for (uint32_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < temp_size; i++) {
 		out[i] = T(rand() % 9) + 1;
 	}
 }
@@ -402,10 +402,10 @@ template<typename T>
 bool matrix<T>::operator==(const matrix<T>& m) const {
 	if (size_x != m.size_x || size_y != m.size_y) return false;
 
-	uint32_t size = size_y * size_x;
+	uint32_t temp_size = size_y * size_x;
 	T* l = data[0]; T* r = m.data[0];
 
-	for (uint32_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < temp_size; i++) {
 		if (!(l[i] == r[i])) return false;
 	}
 
@@ -444,10 +444,10 @@ template<typename T>
 matrix<T> matrix<T>::operator*(const T& val) const {
 	matrix<T> temp(*this);
 
-	uint32_t size = size_y * size_x;
+	uint32_t temp_size = size_y * size_x;
 	T* l = data[0];
 
-	for (uint32_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < temp_size; i++) {
 		l[i] = l[i] * val;
 	}
 
