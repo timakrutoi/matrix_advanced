@@ -15,36 +15,28 @@ void int_to_time(int time) {
 
 int main() {
 	try {
-		//int i = 0;
-		//cin >> i;
-		matrix<double> m_1(xz*8); m_1.set();
-		matrix<double> m_2;
-		unsigned int sum = 0;
-		for (int i = 0; i < 1; i++) {
+		std::cout << "Starting..." << std::endl;
+
+		matrix<double> m1(xz); m1.set(1);
+		matrix<double> m2(xz); m2.set(1);
+		matrix<double> m3(xz); m3.set(xz);
+		//cout << m1 << endl;
+		//cout << m2 << endl;
+		int i;
+		int sum = 0;
+		double temp = 0;
+		//for (int i = 0; i < 100; i++) {
 			clock_t beg = clock();
-			m_2 = multi_strassen(m_1, m_1, 1);
+			m2 = m2.multi(m1);
+			//m2 = matrix<double>::multi_strassen(m1, m1, 1);
 			clock_t end = clock();
 			sum += end - beg;
-		}
-		int_to_time(sum/1);
-		/*sum = 0;
-		for (int i = 0; i < 10; i++) {
-			clock_t beg = clock();
-			m_2 = m_1.inv();
-			clock_t end = clock();
-			sum += end - beg;
-		}
-		int_to_time(sum / 10);
-		sum = 0;
-		for (int i = 0; i < 10; i++) {
-			clock_t beg = clock();
-			double d = m_1.det();
-			clock_t end = clock();
-			sum += end - beg;
-		}
-		int_to_time(sum / 10);*/
+		//}
+		int_to_time(sum / 1);
+		cout << endl << (m2 == m3) << endl;
+
 	}
-	catch (std::exception & e) {
+	catch (std::exception& e) {
 		std::cerr << "Error: " << e.what();
 	}
 
