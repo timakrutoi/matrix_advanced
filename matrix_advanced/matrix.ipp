@@ -1,5 +1,5 @@
 template<typename T>
-inline matrix<T>::matrix(uint32_t row, uint32_t column) {
+matrix<T>::matrix(uint32_t row, uint32_t column) {
 	size_x = row; size_y = column;
 	uint32_t temp_size = size_x * size_y;
 	data = new T * [size_x];
@@ -12,7 +12,7 @@ inline matrix<T>::matrix(uint32_t row, uint32_t column) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, T(0));
+	std::fill_n(data[0], temp_size, T(0));
 	for (uint32_t i = 1; i < size_x; i++) {
 		data[i] = &data[0][i * size_y];
 	}
@@ -32,7 +32,7 @@ matrix<T>::matrix(uint32_t size_) {
 		throw;
 	}
 
-	std::fill_n(data[0], size_x * size_y, T(0));
+	std::fill_n(data[0], temp_size, T(0));
 	for (uint32_t i = 1; i < size_x; i++) {
 		data[i] = &data[0][i * size_y];
 	}
@@ -257,6 +257,7 @@ matrix<T> matrix<T>::LU() const {
 template<typename T>
 const T matrix<T>::det() const {
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
+
 	matrix<T> temp(*this); temp = temp.LU();
 	T det = T(1);
 
@@ -275,7 +276,7 @@ const T matrix<T>::minor(uint32_t row, uint32_t col) const {
 }
 
 template<typename T>
-matrix<T> matrix<T>::inv() {//need to optimization
+matrix<T> matrix<T>::inv() {//need optimization
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in inverse matrix");
 
 	matrix<T> E = matrix<T>::eye(size_x);
@@ -513,23 +514,10 @@ matrix<T> matrix<T>::multi_strassen(const matrix<T>& m1, const matrix<T>& m2, sh
 
 	matrix<T> c1, c2, c3, c4;
 
-	/*if (mlt_thread > 0) {
-		mlt_thread--;
-		std::future<matrix<T>> f1 = std::async(&matrix<T>::operator+, (p5 + p4), (p6 - p2));
-		std::future<matrix<T>> f2 = std::async(&matrix<T>::operator+, p1, p2);
-		std::future<matrix<T>> f3 = std::async(&matrix<T>::operator+, p3, p4);
-		std::future<matrix<T>> f4 = std::async(&matrix<T>::operator+, (p1 - p3), (p5 - p7));
-		c1 = f1.get();
-		c2 = f2.get();
-		c3 = f3.get();
-		c4 = f4.get();
-	}
-	else {*/
 	c1 = (p5 + p4) + (p6 - p2);
 	c2 = (p1 + p2);
 	c3 = (p3 + p4);
 	c4 = (p1 - p3) + (p5 - p7);
-	//}
 
 	p1.~matrix(); p2.~matrix(); p3.~matrix(); p4.~matrix(); p5.~matrix(); p6.~matrix(); p7.~matrix();
 	out.link(c1, c2, c3, c4);
@@ -567,7 +555,7 @@ template<typename T>
 matrix<T> matrix<T>::multi(const matrix<T>& m) const {
 	if (size_y != m.size_x) throw std::logic_error("Use only sqaure matrices in 'multi' method");
 
-	matrix<T> out(size_x, m.size_y);
+	matrix<T> out(size_x);
 
 	for (uint32_t i = 0; i < size_x; ++i) {
 		T* c = out.data[i];
@@ -586,14 +574,14 @@ matrix<T> matrix<T>::multi(const matrix<T>& m) const {
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& out, matrix<T> matrix) {
+std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
 	out << "[ ";
 	uint32_t size = matrix.columns() * matrix.rows();
 	//std::cout.precision(_OUTPUT_PRECISION_);
 
 	for (uint32_t i = 0; i < size; i++) {
 		uint32_t n = 0;
-		if (i % matrix.rows() == 0 && i > 0) out << "]\n[ ";
+		if (i % matrix.columns() == 0 && i > 0) out << "]\n[ ";
 		if (!(matrix.get(i / matrix.columns(), i % matrix.columns()) < 0) && n <= 4) { out << " "; n++; }
 		out << std::setw(_OUTPUT_PRECISION_ + _OUTPUT_NUMBERSPACE_SIZE_ - n) << std::setprecision(_OUTPUT_PRECISION_) << std::left << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
 	}

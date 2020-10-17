@@ -58,8 +58,7 @@ public:
 
 	matrix multi(const matrix& m) const; // use this only for square matrices
 
-	static matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256
-	
+	static matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256		
 	static matrix<T> eye(uint32_t size);
 };
 
