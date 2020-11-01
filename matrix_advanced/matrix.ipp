@@ -273,7 +273,7 @@ matrix<T> matrix<T>::without_row_and_col(uint32_t row, uint32_t col) const {
 }
 
 template<typename T>
-matrix<T> matrix<T>::LU_opt() const {
+matrix<T> matrix<T>::LU_opt(char arg) const {
 	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU_opt");
 
 	matrix<T> L(size_x), U(size_x);
@@ -285,44 +285,39 @@ matrix<T> matrix<T>::LU_opt() const {
 	for (uint32_t i = 0; i < size_x; i++) {
 		udata[i] = just_data[i];
 		L.data[i][0] = data[i][0] / needed_const;
-
-		//U.data[0][i] = data[0][i];
-		//L.data[i][0] = (data[i][0] / data[0][0]);
 	}
 
 	for (uint32_t i = 1; i < size_x; i++) {
 		T* udatai = U.data[i];
 		T* just_datai = data[i];
-		T udataii = U.data[i][i];
 
 		for (uint32_t j = i; j < size_x; j++) {
 
 			udatai[j] = just_datai[j];
 			L.data[j][i] = data[j][i];  // not changed
 
-			T udata2 = U.data[i][j];
-			T ldata2 = L.data[j][i];
+			T* udata2 = &U.data[i][j];
+			T* ldata2 = &L.data[j][i];
 
 			T* ldatai = L.data[i];
 			T* ldataj = L.data[j];
 
 			for (uint32_t k = 0; k < i; k++) {
-				udata2 = udata2 - (ldatai[k] * U.data[k][j]);
-				ldata2 = ldata2 - (ldataj[k] * U.data[k][i]);
-
-				//U.data[i][j] = U.data[i][j] - (L.data[i][k] * U.data[k][j]);
-				//L.data[j][i] = L.data[j][i] - (L.data[j][k] * U.data[k][i]);
+				*udata2 = *udata2 - (ldatai[k] * U.data[k][j]);
+				*ldata2 = *ldata2 - (ldataj[k] * U.data[k][i]);
 			}
 
+			T udataii = U.data[i][i];
 			L.data[j][i] = L.data[j][i] / udataii;
 		}
 	}
-
+	
+	if (arg == 'L') return L;
 	return U;
 }
 
 template<typename T>
-matrix<T> matrix<T>::LU() const {
+matrix<T> matrix<T>::LU(char arg) const {
 	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU");
 
 	matrix<T> L(size_x), U(size_x);
@@ -346,7 +341,7 @@ matrix<T> matrix<T>::LU() const {
 			L.data[j][i] = L.data[j][i] / U.data[i][i];
 		}
 	}
-
+	if (arg == 'L') return L;
 	return U;
 }
 
@@ -354,7 +349,7 @@ template<typename T>
 const T matrix<T>::det() const {
 	if (size_x != size_y) throw std::logic_error("Invalid matrix size in det");
 
-	matrix<T> temp(*this); temp = temp.LU();
+	matrix<T> temp(*this); temp = temp.LU_opt('U');
 	T det = T(1);
 
 	for (uint32_t i = 0; i < size_x; i++) {

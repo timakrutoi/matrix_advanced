@@ -17,17 +17,8 @@ int main() {
 	try {
 		std::cout << "Starting..." << std::endl;
 
-		matrix<double> m1(7); m1.set(1);
-
-		string name1 = "C:\\Users\\Admin\\Desktop\\DB1.txt";
-		string name2 = "C:\\Users\\Admin\\Desktop\\DB2.txt";
-
-		//cout << m1;
-
-		m1 = load(name1);
-		//m1.save(name1);
-
-		cout << m1;
+		matrix<double> m1(5); m1.set();
+		matrix<double> m2;
 		
 		cout << "Done!";
 	}

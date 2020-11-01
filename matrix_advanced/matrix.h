@@ -43,8 +43,8 @@ public:
 	const uint32_t columns() const;
 	const void resize(uint32_t x, uint32_t y = x);
 	matrix without_row_and_col(uint32_t row, uint32_t col) const;
-	matrix LU() const;
-	matrix LU_opt() const;
+	matrix LU(char arg = 'U') const;
+	matrix LU_opt(char arg = 'U') const;
 
 	const T det() const;
 	const T minor(uint32_t row, uint32_t col) const;
