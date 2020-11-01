@@ -10,27 +10,25 @@ void int_to_time(int time) {
 	time /= 60;
 	int min = time % 60;
 	time /= 60;
-	std::cout << std::endl << "All time: " << time << ":" << min << ":" << sec << ":" << milsec << std::endl;
+	std::cout << "All time: " << time << ":" << min << ":" << sec << ":" << milsec << std::endl;
 }
 
 int main() {
 	try {
 		std::cout << "Starting..." << std::endl;
 
-		matrix<int> lox(5, 10);
-		lox.set(0, 3, 69);
-		lox.set(3, 0, 69);
-		cout << lox;
+		matrix<double> m1(7); m1.set(1);
 
-		//matrix<double> m1(xz * 2); m1.set(1);
-		//unsigned int sum = clock();
+		string name1 = "C:\\Users\\Admin\\Desktop\\DB1.txt";
+		string name2 = "C:\\Users\\Admin\\Desktop\\DB2.txt";
 
-		//m1 = matrix<double>::multi_strassen(m1, m1, 1);
-		//m1 = matrix<double>::eye(4);
-		//cout << m1 << endl;
+		//cout << m1;
 
-		//int_to_time(clock() - sum);
+		m1 = load(name1);
+		//m1.save(name1);
 
+		cout << m1;
+		
 		cout << "Done!";
 	}
 	catch (std::exception& e) {

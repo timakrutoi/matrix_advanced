@@ -1,3 +1,5 @@
+//#include "matrix.h"
+
 template<typename T>
 matrix<T>::matrix(uint32_t row, uint32_t column) {
 	size_x = row; size_y = column;
@@ -100,6 +102,51 @@ const T matrix<T>::get(uint32_t row, uint32_t column) const {
 	if (row >= size_x || column >= size_y) throw std::out_of_range("Invalid args ( get )");
 
 	return data[row][column];
+}
+
+matrix<double> load(std::string name) {
+	std::ifstream file;
+	file.open(name);
+	if (!file) throw std::logic_error("File not found ( load )");
+
+	uint32_t size_x = 0, size_y = 0;
+	std::string line;
+	double smth;
+
+	for (size_x = 0; std::getline(file, line); size_x++) {  // findin matrix size
+		if (size_x == 0) {
+			std::istringstream iss(line);
+			for (size_y = 0; iss >> smth; size_y++);
+		}
+	}
+	//file.seekg(file.beg);  // doesnt work
+	file.close();
+	file.open(name);
+
+	matrix<double> temp(size_x, size_y);
+
+	for (size_x = 0; std::getline(file, line); size_x++) {
+		std::istringstream iss(line);
+		for (size_y = 0; iss >> smth; size_y++) {
+			temp.set(size_x, size_y, smth);
+		}
+	}
+
+	file.close();
+	return temp;
+}
+
+template<typename T>
+void matrix<T>::save(std::string name) {
+	std::ofstream file;
+	file.open(name);
+
+	for (uint32_t i = 0; i < this->rows(); i++) {
+		for (uint32_t j = 0; j < this->columns(); j++) {
+			file << this->get(i, j) << " ";
+		}
+		file << std::endl;
+	}
 }
 
 template<typename T>
@@ -223,6 +270,55 @@ matrix<T> matrix<T>::without_row_and_col(uint32_t row, uint32_t col) const {
 	}
 
 	return temp;
+}
+
+template<typename T>
+matrix<T> matrix<T>::LU_opt() const {
+	if (!(size_x == size_y) || data[0][0] == 0) throw std::logic_error("Invalid matrix in LU_opt");
+
+	matrix<T> L(size_x), U(size_x);
+
+	T* udata = U.data[0];
+	T* just_data = data[0];
+	T needed_const = data[0][0];
+
+	for (uint32_t i = 0; i < size_x; i++) {
+		udata[i] = just_data[i];
+		L.data[i][0] = data[i][0] / needed_const;
+
+		//U.data[0][i] = data[0][i];
+		//L.data[i][0] = (data[i][0] / data[0][0]);
+	}
+
+	for (uint32_t i = 1; i < size_x; i++) {
+		T* udatai = U.data[i];
+		T* just_datai = data[i];
+		T udataii = U.data[i][i];
+
+		for (uint32_t j = i; j < size_x; j++) {
+
+			udatai[j] = just_datai[j];
+			L.data[j][i] = data[j][i];  // not changed
+
+			T udata2 = U.data[i][j];
+			T ldata2 = L.data[j][i];
+
+			T* ldatai = L.data[i];
+			T* ldataj = L.data[j];
+
+			for (uint32_t k = 0; k < i; k++) {
+				udata2 = udata2 - (ldatai[k] * U.data[k][j]);
+				ldata2 = ldata2 - (ldataj[k] * U.data[k][i]);
+
+				//U.data[i][j] = U.data[i][j] - (L.data[i][k] * U.data[k][j]);
+				//L.data[j][i] = L.data[j][i] - (L.data[j][k] * U.data[k][i]);
+			}
+
+			L.data[j][i] = L.data[j][i] / udataii;
+		}
+	}
+
+	return U;
 }
 
 template<typename T>
@@ -584,6 +680,7 @@ std::ostream& operator<<(std::ostream& out, matrix<T>& matrix) {
 		if (i % matrix.columns() == 0 && i > 0) out << "]\n[ ";
 		if (!(matrix.get(i / matrix.columns(), i % matrix.columns()) < 0) && n <= 4) { out << " "; n++; }
 		out << std::setw(_OUTPUT_PRECISION_ + _OUTPUT_NUMBERSPACE_SIZE_ - n) << std::setprecision(_OUTPUT_PRECISION_) << std::left << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
+		//out << matrix.get(i / matrix.columns(), i % matrix.columns()) << " ";
 	}
 	out << "]" << std::endl;
 

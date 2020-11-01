@@ -8,6 +8,8 @@
 #include <future>
 #include <ctime>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
 //#include <vector>
 //#include <immintrin.h>
 
@@ -35,11 +37,14 @@ public:
 	void set();
 	const T get(uint32_t x, uint32_t y) const;
 
+	void save(std::string name);
+
 	const uint32_t rows() const;
 	const uint32_t columns() const;
 	const void resize(uint32_t x, uint32_t y = x);
 	matrix without_row_and_col(uint32_t row, uint32_t col) const;
 	matrix LU() const;
+	matrix LU_opt() const;
 
 	const T det() const;
 	const T minor(uint32_t row, uint32_t col) const;
@@ -61,5 +66,7 @@ public:
 	static matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256		
 	static matrix<T> eye(uint32_t size);
 };
+
+matrix<double> load(std::string name);
 
 #include "matrix.ipp"
