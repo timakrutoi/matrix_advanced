@@ -648,8 +648,7 @@ template<typename T>
 matrix_row<T> matrix<T>::operator[](size_t i) {
 	if (i >= size_x) throw std::out_of_range("Invalid index");
 
-
-	return matrix_row<T>(data[i], size_x);
+	return matrix_row<T>(data[i], size_y);
 }
 
 template<typename T>
