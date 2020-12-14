@@ -1,3 +1,4 @@
+#include "matrix.h"
 //#include "matrix.h"
 
 template<typename T>
@@ -104,7 +105,8 @@ const T matrix<T>::get(uint32_t row, uint32_t column) const {
 	return data[row][column];
 }
 
-matrix<double> load(std::string name) {
+template<typename T>
+matrix<double> matrix<T>::load(std::string name) {
 	std::ifstream file;
 	file.open(name);
 	if (!file) throw std::logic_error("File not found ( load )");
@@ -643,6 +645,14 @@ matrix<T> matrix<T>::t() {
 }
 
 template<typename T>
+matrix_row<T> matrix<T>::operator[](size_t i) {
+	if (i >= size_x) throw std::out_of_range("Invalid index");
+
+
+	return matrix_row<T>(data[i], size_x);
+}
+
+template<typename T>
 matrix<T> matrix<T>::multi(const matrix<T>& m) const {
 	if (size_y != m.size_x) throw std::logic_error("Use only sqaure matrices in 'multi' method");
 
@@ -690,4 +700,17 @@ matrix<T>::~matrix() {
 	delete[] data;
 
 	data = nullptr;
+}
+
+template <typename T>
+matrix_row<T>::matrix_row(T* d, size_t s) {
+	size = s;
+	data = d;
+}
+
+template<typename T>
+T matrix_row<T>::operator[](size_t i) {
+	if (i >= size) throw std::out_of_range("Invalid index");
+
+	return data[i];
 }

@@ -13,6 +13,18 @@
 //#include <vector>
 //#include <immintrin.h>
 
+template <typename T>
+class matrix_row {
+private:
+	T* data;
+	size_t size;
+public:
+	matrix_row(T* data, size_t s);
+
+	T operator[](size_t i);
+};
+
+
 template<typename T>
 class matrix {
 private:
@@ -60,13 +72,13 @@ public:
 	bool operator==(const matrix& m) const;
 	bool operator!=(const matrix& m) const;
 	matrix t();
+	matrix_row<T> operator[](size_t i);
 
 	matrix multi(const matrix& m) const; // use this only for square matrices
 
 	static matrix<T> multi_strassen(const matrix<T>& m1, const matrix<T>& m2, short mlt_thread); // 256		
 	static matrix<T> eye(uint32_t size);
+	static matrix<double> load(std::string name);
 };
-
-matrix<double> load(std::string name);
 
 #include "matrix.ipp"

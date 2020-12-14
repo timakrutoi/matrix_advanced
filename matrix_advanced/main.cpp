@@ -17,9 +17,11 @@ int main() {
 	try {
 		std::cout << "Starting..." << std::endl;
 
-		matrix<double> m1(5); m1.set();
-		matrix<double> m2;
-		
+		matrix<double> m(5);
+
+		m = matrix<double>::load("C:\\Users\\Admin\\Desktop\\DB\\lab20\\DB5.txt");
+		cout << m;
+
 		cout << "Done!";
 	}
 	catch (std::exception& e) {
