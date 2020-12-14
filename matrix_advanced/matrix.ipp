@@ -149,6 +149,7 @@ void matrix<T>::save(std::string name) {
 		}
 		file << std::endl;
 	}
+	file.close();
 }
 
 template<typename T>
